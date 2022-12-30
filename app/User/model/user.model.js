@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     username: { type: String, unique: true },
     email: { type: String, unique: true },
-    password: String,
+    password: { type: String, select: false },
     status: {
       type: String,
       enum: ["Pending", "Active"],
@@ -14,10 +14,11 @@ const userSchema = new mongoose.Schema(
     confirmationCode: {
       type: String,
       unique: true,
+      select: false,
     },
     pendingRequest: {
       type: Number,
-      default: 0
+      default: 0,
     },
   },
   { timestamps: true }

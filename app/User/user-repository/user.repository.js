@@ -26,6 +26,23 @@ exports.findByUsername = async (req) => {
   return user;
 };
 
+exports.getUserByUsernameOrEmail = async (req) => {
+  const searchString = `[${req.query.searchString}]`;
+  console.log(searchString);
+  const user = User.find({
+    $or: [
+      { username: { $regex: searchString, $options: "i" } },
+      { email: { $regex: searchString, $options: "i" } },
+    ],
+  }).limit(10);
+  return user;
+};
+
+exports.getAllUsers = async (limit,offset) => {
+ const users = User.find().skip(offset).limit(limit);
+ return users;
+};
+
 exports.findUserById = async (userId) => {
   return User.findById(userId);
 };
@@ -60,7 +77,6 @@ exports.deleteExistingToken = async (userId) => {
 };
 
 exports.findAndUpdateUser = async (_id, hash) => {
-  console.log("----------HASH---------", hash);
   return User.findOneAndUpdate(
     { _id: _id },
     { $set: { password: hash } },
