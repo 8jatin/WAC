@@ -10,8 +10,10 @@ module.exports = function(app) {
     next();
   });
 
-  app.get("/api/home", controller.allAccess);
+  app.get("/api/home/user", [authJwt.verifyToken] ,controller.allAccess);
 
-  app.get("/api/home/user", [authJwt.verifyToken], controller.userBoard);
+  app.get("/api/searchUser", [authJwt.verifyToken], controller.searchUserController);
+
+  app.get("/api/users", [authJwt.verifyToken], controller.allUsers);
 
 };
