@@ -1,5 +1,7 @@
+const { useReducer } = require("react");
 const {
-  getUserByUsernameOrEmail, getAllUsers,
+  getUserByUsernameOrEmail,
+  getAllUsers,
 } = require("../user-repository/user.repository");
 
 exports.findUserBySearchString = async (req, res) => {
@@ -8,9 +10,9 @@ exports.findUserBySearchString = async (req, res) => {
   res.status(200).send(users);
 };
 
-exports.showAllUsers = async (req, res)=>{
-    const limit = req.query.limit ? req.query.limit : 5;
-    const offset = req.query.offset?req.query.offset:0;
-    const users = await getAllUsers(limit,offset);
-    res.status(200).send(users);
-}
+exports.showAllUsers = async (req, res) => {
+  const limit = req.query.limit ? req.query.limit : 5;
+  const offset = req.query.offset ? req.query.offset : 0;
+  const users = await getAllUsers(limit, offset);
+  res.status(200).send(users);
+};
