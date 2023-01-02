@@ -34,12 +34,12 @@ exports.getUserByUsernameOrEmail = async (req) => {
       { username: { $regex: searchString, $options: "i" } },
       { email: { $regex: searchString, $options: "i" } },
     ],
-  }).limit(10);
+  }).select("-password -confirmationCode").limit(10);
   return user;
 };
 
 exports.getAllUsers = async (limit,offset) => {
- const users = User.find().skip(offset).limit(limit);
+ const users = User.find().select("-password -confirmationCode").skip(offset).limit(limit);
  return users;
 };
 
