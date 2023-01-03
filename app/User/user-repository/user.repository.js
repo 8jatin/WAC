@@ -5,7 +5,6 @@ var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 const Token = require("../model/token.model");
 const { user } = require("../../Config/auth.config");
-const { useEffect } = require("react");
 
 exports.create = async (req) => {
   const token = jwt.sign({ email: req.body.email }, config.secret);
@@ -34,13 +33,24 @@ exports.getUserByUsernameOrEmail = async (req) => {
       { username: { $regex: searchString, $options: "i" } },
       { email: { $regex: searchString, $options: "i" } },
     ],
-  }).select("-password -confirmationCode").limit(10);
+  })
+    .select("-password -confirmationCode")
+    .limit(10);
   return user;
 };
 
-exports.getAllUsers = async (limit,offset) => {
- const users = User.find().select("-password -confirmationCode").skip(offset).limit(limit);
- return users;
+exports.countAllUsers = async ()=>{
+  const users =  await User.count({});
+  console.log(users);
+  return users;
+}
+
+exports.getAllUsers = async (limit, offset) => {
+  const users = await User.find()
+    .select("-password -confirmationCode")
+    .skip(offset)
+    .limit(limit);
+  return users;
 };
 
 exports.findUserById = async (userId) => {

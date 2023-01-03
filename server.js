@@ -1,8 +1,11 @@
 const express = require("express");
+const http = require("http");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
 const dbConfig = require("./app/Config/db.config");
+const socketio = require("socket.io");
+const WebSockets = require("./Utlis/websockets")
 
 
 const app = express();
@@ -50,6 +53,8 @@ app.get("/", (req, res) => {
 require('./app/Auth/route/auth.routes')(app);
 require('./app/User/route/user.routes')(app);
 require('./app/Add-friend/routes/request.route')(app);
+require('./app/Chats/route/chat.route')(app);
+
 
 
 // set port, listen for requests
@@ -57,3 +62,14 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
+
+// create http server
+const server = http.createServer(app);
+//create socket connection
+global.io = socketio(server,{
+
+  cors: {
+      origin: "http://localhost:3000"
+  }
+});
+global.io.on('connection',WebSockets.connection);
