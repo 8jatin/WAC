@@ -10,6 +10,7 @@ exports.searchUserController = async (req, res) => {
 
 exports.allUsers = async (req, res) => {
   const result = await showAllUsers(req, res);
+  res.send(result);
 };
 
 // exports.adminBoard = (req, res) => {

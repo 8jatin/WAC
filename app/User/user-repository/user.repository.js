@@ -39,10 +39,17 @@ exports.getUserByUsernameOrEmail = async (req) => {
   return user;
 };
 
+exports.countAllUsers = async ()=>{
+  const users =  await User.count({});
+  console.log(users);
+  return users;
+}
+
 exports.getAllUsers = async (limit, offset) => {
-  const users = User.find()
-    .select("-password -confirmationCode").count();
-    console.log(users);
+  const users = await User.find()
+    .select("-password -confirmationCode")
+    .skip(offset)
+    .limit(limit);
   return users;
 };
 
