@@ -27,7 +27,6 @@ exports.findByUsername = async (req) => {
 
 exports.getUserByUsernameOrEmail = async (req) => {
   const searchString = `[${req.query.searchString}]`;
-  console.log(searchString);
   const user = User.find({
     $or: [
       { username: { $regex: searchString, $options: "i" } },
@@ -41,7 +40,6 @@ exports.getUserByUsernameOrEmail = async (req) => {
 
 exports.countAllUsers = async ()=>{
   const users =  await User.count({});
-  console.log(users);
   return users;
 }
 

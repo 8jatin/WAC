@@ -7,7 +7,6 @@ const {
 
 exports.findUserBySearchString = async (req, res) => {
   const users = await getUserByUsernameOrEmail(req);
-  console.log(users);
   res.status(200).send(users);
 };
 
