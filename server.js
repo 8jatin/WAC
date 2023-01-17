@@ -3,7 +3,7 @@ const http = require("http");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
-const dbConfig = require("./app/Config/db.config");
+const dbConfig = require("./src/Config/db.config");
 const socketio = require("socket.io");
 
 
@@ -49,9 +49,9 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to Chat application." });
 });
 
-require('./app/Auth/route/auth.routes')(app);
-require('./app/User/route/user.routes')(app);
-require('./app/Add-friend/routes/request.route')(app);
+require('./src/Auth/auth.routes')(app);
+require('./src/User/user.routes')(app);
+require('./src/Add-friend/request.route')(app);
 // require('./app/Chats/route/chat.route')(app);
 
 

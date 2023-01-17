@@ -1,36 +1,36 @@
-const config = require("../../Config/auth.config");
-const User = require("../model/user.model");
+const config = require("../Config/auth.config");
+const User = require("./model/user.model");
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
-const Token = require("../model/token.model");
-const { user } = require("../../Config/auth.config");
+const Token = require("./model/token.model");
+const { user } = require("../Config/auth.config");
 
-exports.create = async (req) => {
-  const token = jwt.sign({ email: req.body.email }, config.secret);
+exports.create = async ({ username, password, email }) => {
+  const token = jwt.sign({ email: email }, config.secret);
 
   const user = await User.create({
-    username: req.body.username,
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 8),
+    username: username,
+    email: email,
+    password: bcrypt.hashSync(password, 8),
     confirmationCode: token,
   });
   return user;
 };
 
-exports.findByUsername = async (req) => {
+exports.findByUsername = async (username) => {
   const user = User.findOne({
-    username: req.body.username,
+    username: username,
   });
   return user;
 };
 
-exports.getUserByUsernameOrEmail = async (req) => {
-  const searchString = `[${req.query.searchString}]`;
+exports.getUserByUsernameOrEmail = async (searchString) => {
+  const stringToSearch = `[${searchString}]`;
   const user = User.find({
     $or: [
-      { username: { $regex: searchString, $options: "i" } },
-      { email: { $regex: searchString, $options: "i" } },
+      { username: { $regex: stringToSearch, $options: "i" } },
+      { email: { $regex: stringToSearch, $options: "i" } },
     ],
   })
     .select("-password -confirmationCode")
@@ -38,10 +38,10 @@ exports.getUserByUsernameOrEmail = async (req) => {
   return user;
 };
 
-exports.countAllUsers = async ()=>{
-  const users =  await User.count({});
+exports.countAllUsers = async () => {
+  const users = await User.count({});
   return users;
-}
+};
 
 exports.getAllUsers = async (limit, offset) => {
   const users = await User.find()
@@ -92,11 +92,11 @@ exports.findAndUpdateUser = async (_id, hash) => {
   );
 };
 
-exports.updateStatusAfterConfirmation = async (req) => {
+exports.updateStatusAfterConfirmation = async (confirmationCode) => {
   return User.findOneAndUpdate(
-    { confirmationCode: req.params.confirmationCode },
+    { confirmationCode: confirmationCode },
     { $unset: { confirmationCode: "" } },
-    { new: true, upsert: true }
+    { new: false, upsert: true }
   );
 };
 

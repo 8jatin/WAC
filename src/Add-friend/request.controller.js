@@ -1,4 +1,4 @@
-const { sendRequest, acceptRequest } = require("../service/request.service");
+const { sendRequest, acceptRequest } = require("./request.service");
 
 exports.sendRequestController = async (req, res) => {
   try {

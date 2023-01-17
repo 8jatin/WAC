@@ -3,12 +3,12 @@ const {
   findByUsername,
   findAndUpdateUserRequest,
   updateUserFriendList,
-} = require("../../User/user-repository/user.repository");
+} = require("../User/user.repository");
 const {
   createRequest,
   findRequestById,
   updateRequestStatus,
-} = require("../repository/request.repository");
+} = require("./request.repository");
 
 exports.sendRequest = async (req, res) => {
   try {

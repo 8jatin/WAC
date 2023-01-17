@@ -1,4 +1,4 @@
-const Request = require("../models/request.model");
+const Request = require("./request.model");
 
 exports.createRequest = async (receiverId, senderId) => {
   const request = Request.create({

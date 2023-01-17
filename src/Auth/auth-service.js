@@ -1,4 +1,4 @@
-const config = require("../../Config/auth.config");
+const config = require("../Config/auth.config");
 const crypto = require("crypto");
 
 var jwt = require("jsonwebtoken");
@@ -13,87 +13,69 @@ const {
   deleteExistingToken,
   generateToken,
   findTokenToResetPassword,
-} = require("../../User/user-repository/user.repository");
+} = require("../User/user.repository");
 const {
   sendConfirmationEmail,
   sendEmailToResetPassword,
   sendEmailForResetPasswordSuccess,
-} = require("../../Config/nodemailer.config");
-const Token = require("../../User/model/token.model");
-const { bcrypt_salt } = require("../../Config/auth.config");
-const { generateOTP } = require("../../Middlewares/generateOTP");
+} = require("../Config/nodemailer.config");
+const { bcrypt_salt, pass } = require("../Config/auth.config");
+const { generateOTP } = require("../validators/generateOTP");
 
-exports.createUser = async (req, res) => {
-  const user = await create(req);
-  user.save((err, user) => {
-    if (err) {
-      res.status(500).send({ message: err });
-      return;
-    }
-
-    res.status(201).send({
-      message:
-        "User was registered successfully!, Check your email to confirm the registration",
-    });
-
-    sendConfirmationEmail(user.username, user.email, user.confirmationCode);
-  });
+exports.createUser = async ({ username, password, email }) => {
+  try {
+    const user = await create({ username, password, email });
+    const verification = await sendConfirmationEmail(
+      user.username,
+      user.email,
+      user.confirmationCode
+    );
+  } catch (err) {
+    throw new Error("REGISTRATION ERROR");
+  }
 };
 
-exports.logIn = async (req, res) => {
+exports.logIn = async ({ username, password }) => {
   try {
-    const currentUser = await findByUsername(req);
+    const currentUser = await findByUsername(username);
 
     if (!currentUser) {
-      return res.status(404).send({ message: "User Not found." });
+      throw new Error(`User not found`);
     }
 
     if (currentUser.status != "Active") {
-      return res.status(401).send({
-        message: "Pending Account. Please Verify Your Email!",
-      });
+      throw new Error(
+        `User account is in ${currentUser.status} state , please verify your account on ${currentUser.email}`
+      );
     }
 
-    var passwordIsValid = bcrypt.compareSync(
-      req.body.password,
-      currentUser.password
-    );
+    var passwordIsValid = bcrypt.compareSync(password, currentUser.password);
 
     if (!passwordIsValid) {
-      return res.status(401).send({ message: "Invalid Password!" });
+      throw new Error("INVALID PASSWORD!");
     }
 
     var token = jwt.sign({ id: currentUser.id }, config.secret, {
       expiresIn: 86400, // 24 hours
     });
 
-    req.session.token = token;
-
-    res.status(200).send({
+    const loggedUserDetails = {
       id: currentUser._id,
       username: currentUser.username,
       email: currentUser.email,
       status: currentUser.status,
       requestsPending: currentUser.pendingRequest,
       friends: currentUser.friendList,
-    });
+    };
+    return {loggedUserDetails,token};
   } catch (err) {
     console.log("Login error", err);
   }
 };
 
-exports.logOut = async (req, res) => {
+exports.forgotPassword = async (email) => {
   try {
-    req.session = null;
-    return res.status(200).send({ message: "You've been signed out!" });
-  } catch (err) {
-    this.next(err);
-  }
-};
-
-exports.forgotPassword = async (req, res) => {
-  try {
-    const user = await findUserByEmail(req.body.email);
+    const user = await findUserByEmail(email);
     if (!user) {
       res.status(404).send("User does not exist");
     }
@@ -110,21 +92,19 @@ exports.forgotPassword = async (req, res) => {
     await generateToken(user._id, hash, otp);
     try {
       await sendEmailToResetPassword(user.username, user.email, otp);
-      res.send("Password reset link send to the given email");
     } catch (error) {
-      res.status(500).send("There is error while sending the email");
+      throw new Error(`There is error while sending the email: ${error}`);
     }
   } catch (error) {
     res.status(500).json(error);
   }
 };
 
-exports.resetPassword = async (req, res) => {
+exports.resetPassword = async ({password,otp}) => {
   try {
-    const queryToken = await findTokenToResetPassword(req.body.otp);
+    const queryToken = await findTokenToResetPassword(otp);
 
     const user = await findUserById(queryToken.userId);
-    console.log(user);
 
     let passwordResetToken = await findTokenByUserId(user._id);
 
@@ -136,18 +116,14 @@ exports.resetPassword = async (req, res) => {
     if (!isValidToken) {
       throw new Error("Invalid or expired password reset token");
     }
-    const hash = await bcrypt.hashSync(req.body.password, 8);
+    const hash = await bcrypt.hashSync(password, 8);
     const result = await findAndUpdateUser(user._id, hash);
-    console.log(result);
     const modifiedUser = await findUserById(user._id);
     await sendEmailForResetPasswordSuccess(
       modifiedUser.username,
       modifiedUser.email
     );
     await deleteExistingToken(passwordResetToken.userId);
-    res
-      .status(200)
-      .send("Password was changed successfully please login with new password");
   } catch (error) {
     console.log("--------------------", error);
     res.status(500).send("We are unable to change your password at the moment");

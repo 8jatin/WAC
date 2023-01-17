@@ -1,5 +1,5 @@
 const User = require("../User/model/user.model");
-const { updateStatusAfterConfirmation } = require("../User/user-repository/user.repository");
+const { updateStatusAfterConfirmation } = require("../User/user.repository");
 
 exports.verifyUser = (req, res, next) => {
     User.findOne({
@@ -11,7 +11,7 @@ exports.verifyUser = (req, res, next) => {
         }
   
         user.status = "Active";
-        await updateStatusAfterConfirmation(req);
+        await updateStatusAfterConfirmation(user.confirmationCode);
         user.save((err) => {
           if (err) {
             res.status(500).send({ message: err });

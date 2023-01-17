@@ -1,6 +1,6 @@
-const { verifySignUp } = require("../../Middlewares");
-const controller = require("../controller/auth.controller");
-const emailController = require("../../Email-Verification/verifyUser")
+const { verifySignUp } = require("../validators");
+const controller = require("./auth.controller");
+const emailController = require("../Email-Verification/verifyUserEmail")
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -21,11 +21,11 @@ module.exports = function(app) {
 
   app.post("/api/auth/login", controller.signIn);
 
-  app.post("/api/auth/forgotPassword", controller.forgotPasswordController);
+  app.post("/api/auth/forgot-password", controller.forgotPasswordController);
 
   app.post("/api/auth/reset-password", controller.resetPasswordController);
 
   app.post("/api/auth/logout", controller.signOut);
 
-  app.get("/api/auth/verifyEmail/:confirmationCode", emailController.verifyUser)
+  app.get("/api/auth/verify-email/:confirmationCode", emailController.verifyUser)
 };

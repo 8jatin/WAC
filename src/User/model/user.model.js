@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema(
     friendList: [],
     confirmationCode: {
       type: String,
-      unique: true,
     },
     pendingRequest: {
       type: Number,
