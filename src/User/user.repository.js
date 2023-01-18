@@ -25,7 +25,7 @@ exports.findByUsername = async (username) => {
   return user;
 };
 
-exports.getUserByUsernameOrEmail = async (searchString) => {
+exports.getUserBySearchString = async (searchString) => {
   const stringToSearch = `[${searchString}]`;
   const user = User.find({
     $or: [
@@ -33,7 +33,7 @@ exports.getUserByUsernameOrEmail = async (searchString) => {
       { email: { $regex: stringToSearch, $options: "i" } },
     ],
   })
-    .select("-password -confirmationCode")
+    .select("-password -confirmationCode -createdAt -updatedAt -pendingRequest")
     .limit(10);
   return user;
 };
@@ -46,6 +46,7 @@ exports.countAllUsers = async () => {
 exports.getAllUsers = async (limit, offset) => {
   const users = await User.find()
     .select("-password -confirmationCode")
+    .lean()
     .skip(offset)
     .limit(limit);
   return users;

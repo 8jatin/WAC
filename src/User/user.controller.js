@@ -6,12 +6,13 @@ exports.allAccess = (req, res) => {
 
 exports.searchUserController = async (req, res) => {
   try {
-    const result = await findUserBySearchString(req.query.searchString);
-    res.status(200).send(result);
+    const users = await findUserBySearchString(req.query.searchString);
+    const result = users.length===0?`No matching user exists`:users;
+    res.status(200).send(result); 
   } catch (error) {
     res
-      .status(500)
-      .send("We are unable to process your request at this moment");
+      .status(404)
+      .send("User doesn't exist");
   }
 };
 

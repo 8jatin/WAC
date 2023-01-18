@@ -69,7 +69,7 @@ exports.logIn = async ({ username, password }) => {
     };
     return {loggedUserDetails,token};
   } catch (err) {
-    console.log("Login error", err);
+    throw new Error("LOGIN ERROR", err);
   }
 };
 
@@ -96,7 +96,7 @@ exports.forgotPassword = async (email) => {
       throw new Error(`There is error while sending the email: ${error}`);
     }
   } catch (error) {
-    res.status(500).json(error);
+    throw new Error('FORGOT PASSWORD ERROR',error);
   }
 };
 
@@ -125,7 +125,6 @@ exports.resetPassword = async ({password,otp}) => {
     );
     await deleteExistingToken(passwordResetToken.userId);
   } catch (error) {
-    console.log("--------------------", error);
-    res.status(500).send("We are unable to change your password at the moment");
+    throw new Error("RESET PASSWORD ERROR",error);
   }
 };
