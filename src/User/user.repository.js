@@ -4,7 +4,6 @@ const User = require("./model/user.model");
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 const Token = require("./model/token.model");
-const { user } = require("../Config/auth.config");
 
 exports.create = async ({ username, password, email }) => {
   const token = jwt.sign({ email: email }, config.secret);

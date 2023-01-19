@@ -25,6 +25,7 @@
     "react": "^18.2.0",
     "react-router-dom": "^6.5.0",
     "socket.io": "^4.5.4",
-    "two-step-auth": "^1.1.2"
+    "two-step-auth": "^1.1.2",
+    "uuid": "^9.0.0"
   }
 }

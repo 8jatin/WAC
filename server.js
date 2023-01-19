@@ -52,8 +52,7 @@ app.get("/", (req, res) => {
 require('./src/Auth/auth.routes')(app);
 require('./src/User/user.routes')(app);
 require('./src/Add-friend/request.route')(app);
-// require('./app/Chats/route/chat.route')(app);
-
+require('./src/Chat/chat.route')(app);
 
 
 // set port, listen for requests
@@ -61,14 +60,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
-
-// // create http server
-// const server = http.createServer(app);
-// //create socket connection
-// global.io = socketio(server,{
-
-//   cors: {
-//       origin: "http://localhost:3000"
-//   }
-// });
-// global.io.on('connection',WebSockets.connection);
