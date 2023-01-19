@@ -1,5 +1,5 @@
 const { authJwt } = require("../validators");
-const controller = require("./chat.controller");
+const ChatController = require("./chat.controller");
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -9,6 +9,8 @@ module.exports = function(app) {
     );
     next();
   });
+
+  const controller = new ChatController();
 
   //list of all chat available to user route (it'll take limit and offset as query param)
   app.get("/chats", [authJwt.verifyToken] ,controller.getAllChats);
