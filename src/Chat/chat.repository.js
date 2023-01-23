@@ -14,6 +14,26 @@ const ChatRepository = class {
     });
   };
 
+  increaseChatUnreadCount = async (chatId) => {
+    return Chat.findOneAndUpdate(
+      { _id: chatId },
+      { $inc: { unreadCount: 1 } },
+      { new: true, upsert: true }
+    );
+  };
+
+  updateUnreadCount = async (chatId) => {
+    return Chat.findOneAndUpdate({ _id: chatId }, { $set: { unreadCount: 0 } });
+  };
+
+  updateAllMessageStatus = async (chatId) => {
+    return Chat.findOneAndUpdate(
+      { _id: chatId },
+      { $set: { allReadersRead: true } },
+      { new: true, upsert: true }
+    );
+  };
+
   findPrivateChat = async (members, type) => {
     const chat = Chat.findOne({
       userIds: [...members],
@@ -30,7 +50,7 @@ const ChatRepository = class {
       sender: sender,
       chatId: chatId,
       messageId: messageId,
-      readers: [{ messageId: messageId, userIds: [sender] }],
+      readers: [{ messageId: messageId, userId: sender, isRead: true }],
     });
     savedMessage.save((err) => {
       if (err) {
@@ -38,6 +58,36 @@ const ChatRepository = class {
       }
     });
     return savedMessage;
+  };
+
+  getChatById = async (chatId) => {
+    return Chat.findOne({ _id: chatId });
+  };
+
+  getLastMessageFromChat = async (chatId) => {
+    return Message.find({ chatId: chatId }).sort({ createdAt: -1 }).limit(1);
+  };
+
+  updateRecentMessages = async (userId, chatId, messageId) => {
+    const updateMessage = Message.updateMany(
+      {
+        chatId: chatId,
+      },
+      {
+        $addToSet: {
+          readers: [{ userId: userId, isRead: true }],
+        },
+      },
+      { new: true, multi: true }
+    );
+    return updateMessage;
+  };
+
+  getMessagesByChatId = async (chatId, offset, limit) => {
+    return Message.find({ chatId: chatId })
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit);
   };
 };
 module.exports = ChatRepository;

@@ -7,7 +7,7 @@ const recipientSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  userIds: Array,
+  userId: String,
   readAt: {
     type: Date,
     default: Date.now(),

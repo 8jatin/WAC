@@ -27,5 +27,6 @@ module.exports = function(app) {
 
   app.post("/api/auth/logout", controller.signOut);
 
+  //change the email verification url from nodemailer once you completed the application
   app.get("/api/auth/verify-email/:confirmationCode", emailController.verifyUser)
 };

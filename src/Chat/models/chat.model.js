@@ -9,6 +9,7 @@ const chatSchema = new mongoose.Schema(
       enum: ["Private", "Group"],
       default: "Private",
     },
+    allReadersRead: {type:Boolean,default:false},
     chatInitiator: String,
     unreadCount: Number,
   },
