@@ -1,5 +1,5 @@
 const { authJwt } = require("../validators");
-const controller = require("./user.controller");
+const UserController = require("./user.controller");
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -9,6 +9,8 @@ module.exports = function(app) {
     );
     next();
   });
+
+  const controller = new UserController();
 
   app.get("/api/home/user", [authJwt.verifyToken] ,controller.allAccess);
 
