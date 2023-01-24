@@ -8,7 +8,7 @@ const ChatService = class {
 
   startChat = async ({ from, to, type, chatName }) => {
     //using a set of users so that no duplicate users can exist in one chat
-    let users = new Set();
+    const users = new Set();
     users.add(from);
     for (let val of to) {
       users.add(val);
@@ -20,7 +20,7 @@ const ChatService = class {
         members,
         type
       );
-      if (privateChat !== null) {
+      if (privateChat) {
         return {
           isNew: false,
           _id: privateChat._id,
@@ -31,7 +31,7 @@ const ChatService = class {
         };
       }
     }
-    //two users can create as many group chats as they can 
+    //two users can create as many group chats as they can
     const result = await this.chatRepository.createChat(
       members,
       type,
@@ -48,16 +48,30 @@ const ChatService = class {
   };
 
   getChats = async ({ userId, limit, offset }) => {
-    const chats = await this.chatRepository.findUserChats(
-      userId,
-      limit,
-      offset
-    );
-    return chats;
+    try {
+      console.log(userId);
+      const chats = await this.chatRepository.findUserChats(userId,limit,offset);
+
+      //This code is to return the recent message from each chat, we'll use it in future
+
+      // let messages = new Set();
+      // console.log(chats.length);
+      // for (let i = 0; i < chats.length; i++) {
+      //   const message = await this.chatRepository.getLastMessageFromChat({
+      //   _id:chats[i]._id,
+      //   });
+      //   messages.add(message);
+      // }
+      return chats;
+    } catch (error) {
+      throw new Error(error);
+    }
   };
 
   storeMessage = async ({ sender, message, chatId }) => {
-    //generate the unique uuid for a message 
+    const findChat = await this.chatRepository.getChatById(chatId);
+    const addParticipant = await this.chatRepository.addChatParticipants(chatId,findChat.userIds);
+    //generate the unique uuid for a message
     const messageId = uuidv4().replace(/\-/g, "");
     //save messages in database , so they can be showed if one of user is offline
     const messageSaved = await this.chatRepository.saveMessage(
@@ -119,6 +133,12 @@ const ChatService = class {
     );
     return messages;
   };
+  
+  deleteChat = async ({userId,chatId})=>{
+    const removeParticipant = await this.chatRepository.removeParticipantFromChat(userId,chatId);
+    console.log(removeParticipant);
+    return removeParticipant;
+  }
 };
 
 module.exports = ChatService;

@@ -32,7 +32,7 @@ const AuthController = class {
       req.session.token = user.token;
       res.status(200).send(user.loggedUserDetails);
     } catch (error) {
-      res.status(500).json(error);
+      res.status(500).send("Invalid Username or password");
     }
   };
 

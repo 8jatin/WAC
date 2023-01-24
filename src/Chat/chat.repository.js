@@ -1,15 +1,22 @@
+const UserRepository = require("../User/user.repository");
 const { findUserById } = require("../User/user.repository");
 const Chat = require("./models/chat.model");
 const Message = require("./models/message.model");
 
 const ChatRepository = class {
+  constructor() {
+    this.UserRepository = new UserRepository();
+  }
+
   createChat = async (users, type, chatName) => {
-    const sender = await findUserById(users[0]);
+    const sender = await this.UserRepository.findUserById(users[0]);
+    console.log(sender);
     return Chat.create({
       chatName: chatName,
       chatType: type,
       chatInitiator: sender.username,
       userIds: users,
+      participants: users,
       unreadCount: 0,
     });
   };
@@ -34,6 +41,22 @@ const ChatRepository = class {
     );
   };
 
+  addChatParticipants = async (chatId, users) => {
+    return Chat.findOneAndUpdate(
+      { _id: chatId },
+      { $set: { allReadersRead: false , participants:users} },
+      { new: true, upsert: true }
+    );
+  };
+
+  removeParticipantFromChat = async (userId, chatId) => {
+    return Chat.findOneAndUpdate(
+      { _id: chatId },
+      { $pull: { "participants": userId  } },
+      { new: true, upsert: true }
+    );
+  };
+
   findPrivateChat = async (members, type) => {
     const chat = Chat.findOne({
       userIds: [...members],
@@ -42,7 +65,16 @@ const ChatRepository = class {
     return chat;
   };
 
-  findUserChats = async (userId, limit, offset) => {};
+  findUserChats = async (userId, limit, offset) => {
+    const chats = Chat.find({
+      "participants": userId ,
+    })
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .skip(offset);
+
+    return chats;
+  };
 
   saveMessage = async (sender, message, messageId, chatId) => {
     const savedMessage = new Message({

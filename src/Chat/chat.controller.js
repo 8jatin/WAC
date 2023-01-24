@@ -62,7 +62,19 @@ const ChatController = class {
     }
   };
 
-  deleteChat = async (req, res) => {};
+  deleteChat = async (req, res) => {
+    try {
+      const payload = {
+        userId:req.userId,
+        chatId:req.params.id
+      }
+      const result = await this.chatService.deleteChat(payload);
+      console.log(result);
+      res.status(200).send("Your chat has been deleted successfully");
+    } catch (error) {
+      res.status(500).send("We are unable to delete your chat at this moment");
+    }
+  };
 
   markAllConversationRead = async (req, res) => {};
 };
