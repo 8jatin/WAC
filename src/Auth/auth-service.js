@@ -47,7 +47,7 @@ const AuthService = class {
         );
       }
 
-      var passwordIsValid = bcrypt.compareSync(password, currentUser.password);
+      const passwordIsValid = bcrypt.compareSync(password, currentUser.password);
 
       if (!passwordIsValid) {
         throw new Error("INVALID PASSWORD!");
@@ -64,6 +64,7 @@ const AuthService = class {
         status: currentUser.status,
         requestsPending: currentUser.pendingRequest,
         friends: currentUser.friendList,
+        token:token
       };
       return { loggedUserDetails, token };
     } catch (err) {

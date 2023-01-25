@@ -27,7 +27,6 @@ const ChatController = class {
         chatName: req.body.chatName,
       };
       const initiate = await this.chatService.startChat(payload);
-      console.log(initiate);
       res.status(200).send(initiate);
     } catch (error) {
       res.status(500).json(error);
@@ -41,9 +40,10 @@ const ChatController = class {
         chatId: req.params.id,
       };
       const result = await this.chatService.storeMessage(payload);
+      // global.io.sockets.in(chatId).emit("new message",{message:result})
       res.status(201).send(result);
     } catch (error) {
-      res.status(500).send(`Message can't be delivered at the moment`);
+      res.status(401).send(`Unauthorized access`);
     }
   };
 
@@ -58,7 +58,7 @@ const ChatController = class {
       const result = await this.chatService.selectedChat(payload);
       res.status(200).send(result);
     } catch (error) {
-      res.status(500).json(error);
+      res.status(401).send("Unauthorized access");
     }
   };
 
@@ -69,7 +69,6 @@ const ChatController = class {
         chatId:req.params.id
       }
       const result = await this.chatService.deleteChat(payload);
-      console.log(result);
       res.status(200).send("Your chat has been deleted successfully");
     } catch (error) {
       res.status(500).send("We are unable to delete your chat at this moment");

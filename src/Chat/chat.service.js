@@ -21,13 +21,10 @@ const ChatService = class {
         type
       );
       if (privateChat) {
+        await this.chatRepository.addChatParticipants(privateChat._id,members);
         return {
           isNew: false,
-          _id: privateChat._id,
-          userIds: privateChat.userIds,
-          chatInitiator: privateChat.chatInitiator,
-          chatType: privateChat.chatType,
-          chatName: privateChat.chatName,
+          privateChat
         };
       }
     }
@@ -49,7 +46,6 @@ const ChatService = class {
 
   getChats = async ({ userId, limit, offset }) => {
     try {
-      console.log(userId);
       const chats = await this.chatRepository.findUserChats(userId,limit,offset);
 
       //This code is to return the recent message from each chat, we'll use it in future
@@ -70,6 +66,10 @@ const ChatService = class {
 
   storeMessage = async ({ sender, message, chatId }) => {
     const findChat = await this.chatRepository.getChatById(chatId);
+    const verify = findChat.userIds.includes(sender);
+    if(!verify){
+      throw new Error("Unauthorized");
+    }
     const addParticipant = await this.chatRepository.addChatParticipants(chatId,findChat.userIds);
     //generate the unique uuid for a message
     const messageId = uuidv4().replace(/\-/g, "");
@@ -88,6 +88,10 @@ const ChatService = class {
     let receivers = new Set();
     let flag = true;
     const chat = await this.chatRepository.getChatById(chatId);
+    const verify = chat.userIds.includes(userId);
+    if(!verify){
+      throw new Error("Unauthorized");
+    }
     //find the last message from chat with its chatId
     const lastMessage = await this.chatRepository.getLastMessageFromChat(
       chatId
@@ -95,7 +99,7 @@ const ChatService = class {
     //find list of users who have access to that chat
     for (let i = 0; i < chat.userIds.length; i++) {
       //check if current user is in the list of user who have access or not
-      if (userId === chat.userIds[i]) {
+      if (userId == chat.userIds[i]) {
         //check if current user has already the messages
         const userRead = lastMessage[0].readers.some(
           (el) => el.userId === userId
@@ -136,7 +140,6 @@ const ChatService = class {
   
   deleteChat = async ({userId,chatId})=>{
     const removeParticipant = await this.chatRepository.removeParticipantFromChat(userId,chatId);
-    console.log(removeParticipant);
     return removeParticipant;
   }
 };

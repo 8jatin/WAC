@@ -10,8 +10,7 @@ const ChatRepository = class {
 
   createChat = async (users, type, chatName) => {
     const sender = await this.UserRepository.findUserById(users[0]);
-    console.log(sender);
-    return Chat.create({
+    const chat =  Chat.create({
       chatName: chatName,
       chatType: type,
       chatInitiator: sender.username,
@@ -19,6 +18,7 @@ const ChatRepository = class {
       participants: users,
       unreadCount: 0,
     });
+    return chat;
   };
 
   increaseChatUnreadCount = async (chatId) => {
@@ -59,16 +59,16 @@ const ChatRepository = class {
 
   findPrivateChat = async (members, type) => {
     const chat = Chat.findOne({
-      userIds: [...members],
+      userIds: {$all:members},
       type,
-    });
+    }).populate("userIds","username email");
     return chat;
   };
 
   findUserChats = async (userId, limit, offset) => {
     const chats = Chat.find({
       "participants": userId ,
-    })
+    }).populate("userIds","username")
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(offset);

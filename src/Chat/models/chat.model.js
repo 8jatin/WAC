@@ -3,13 +3,13 @@ const mongoose = require("mongoose");
 const chatSchema = new mongoose.Schema(
   {
     chatName: String,
-    userIds: [],
+    userIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     chatType: {
       type: String,
       enum: ["Private", "Group"],
       default: "Private",
     },
-    participants: Array,
+    participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     allReadersRead: { type: Boolean, default: false },
     chatInitiator: String,
     unreadCount: Number,
