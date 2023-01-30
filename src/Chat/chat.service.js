@@ -21,10 +21,10 @@ class ChatService {
         type
       );
       if (privateChat) {
-        await this.chatRepository.addChatParticipants(privateChat._id,members);
+        await this.chatRepository.addChatParticipants(privateChat._id, members);
         return {
           isNew: false,
-          privateChat
+          privateChat,
         };
       }
     }
@@ -46,8 +46,21 @@ class ChatService {
 
   getChats = async ({ userId, limit, offset }) => {
     try {
-      const chats = await this.chatRepository.findUserChats(userId,limit,offset);
-
+      const chats = await this.chatRepository.findUserChats(
+        userId,
+        limit,
+        offset
+      );
+      // let sum = 0;
+      // let result = [];
+      // chats.forEach(async (el) => {
+      //   const unreadMessages =
+      //     await this.chatRepository.findTotalUnreadCountForChat(el._id,userId);
+      //     for(let i = 0 ; i<unreadMessages.length;i++){
+      //       sum += unreadMessages[i].unreadCount
+      //     }
+      //     result.push({sum,el});
+      // });
       //This code is to return the recent message from each chat, we'll use it in future
 
       // let messages = new Set();
@@ -67,10 +80,24 @@ class ChatService {
   storeMessage = async ({ sender, message, chatId }) => {
     const findChat = await this.chatRepository.getChatById(chatId);
     const verify = findChat.userIds.includes(sender);
-    if(!verify){
-      throw new Error("Unauthorized");
+    const receivers = findChat.userIds.filter(el=>el!=sender);
+    const lastMessage = await this.chatRepository.getLastMessageFromChat(chatId);
+    if (lastMessage.length === 0) {
+      receivers.forEach(async (userId) => {
+        await this.chatRepository.createUnreadChat(chatId,userId);
+      });
+    }else{
+      receivers.forEach(async(userId)=>{
+        await this.chatRepository.updateUnreadChatCount(chatId,userId);
+      })
     }
-    const addParticipant = await this.chatRepository.addChatParticipants(chatId,findChat.userIds);
+    if(!verify){
+      return;
+    }
+    const addParticipant = await this.chatRepository.addChatParticipants(
+      chatId,
+      findChat.userIds
+    );
     //generate the unique uuid for a message
     const messageId = uuidv4().replace(/\-/g, "");
     //save messages in database , so they can be showed if one of user is offline
@@ -89,14 +116,14 @@ class ChatService {
     let flag = true;
     const chat = await this.chatRepository.getChatById(chatId);
     const verify = chat.userIds.includes(userId);
-    if(!verify){
+    if (!verify) {
       throw new Error("Unauthorized");
     }
     //find the last message from chat with its chatId
     const lastMessage = await this.chatRepository.getLastMessageFromChat(
       chatId
     );
-    if(lastMessage.length===0){
+    if (lastMessage.length === 0) {
       return;
     }
     //find list of users who have access to that chat
@@ -121,15 +148,18 @@ class ChatService {
     receivers.add(userId);
     for (let val of chat.userIds) {
       //check if all the readers had read the message or not in chat
-      if (!receivers.has(val)) {
+      if (receivers.has(val.toString())==false) {
+        console.log(val);
         //even if a single user is left to read break out of this loop
         flag = false;
         break;
       }
     }
+   const unreadChatCount =  await this.chatRepository.updateUnreadChatSeenMessageCount(chatId,userId);
+
     //if all the readers read then update the chat allReadersRead key and update the unreadCount of chat
     if (flag == true) {
-      await this.chatRepository.updateUnreadCount(chatId);
+      await this.chatRepository.updateUnreadCount(chatId, userId);
       await this.chatRepository.updateAllMessageStatus(chatId);
     }
     //list all the recent messages in chat according to their timestamps
@@ -140,28 +170,28 @@ class ChatService {
     );
     return messages;
   };
-  
-  deleteChat = async ({userId,chatId})=>{
-    const removeParticipant = await this.chatRepository.removeParticipantFromChat(userId,chatId);
-    return removeParticipant;
-  }
 
-  sentMessage = async({messageId,sender,chatId})=>{
-    const targetUsers = new Map();
+  deleteChat = async ({ userId, chatId }) => {
+    const removeParticipant =
+      await this.chatRepository.removeParticipantFromChat(userId, chatId);
+    return removeParticipant;
+  };
+
+  sentMessage = async ({ messageId, sender, chatId }) => {
+    const targetUsers = [];
     const chat = await this.chatRepository.getChatById(chatId);
-    chat.userIds.forEach((userId)=>{
-      if(userId!=sender){
-        targetUsers.set(messageId,[userId]);
+    chat.userIds.forEach((userId) => {
+      if (userId != sender) {
+        targetUsers.push(userId);
       }
     });
-    console.log(targetUsers);
     const message = await this.chatRepository.getMessageByUUID(messageId);
     const result = {
-      targetUsers:targetUsers,
-      message:message,
-    }
+      targetUsers: targetUsers,
+      message: message,
+    };
     return result;
-  }
-};
+  };
+}
 
 module.exports = ChatService;

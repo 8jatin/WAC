@@ -1,16 +1,16 @@
 const UserRepository = require("../User/user.repository");
-const { findUserById } = require("../User/user.repository");
 const Chat = require("./models/chat.model");
 const Message = require("./models/message.model");
+const UnreadChat = require("./models/unreadMessageCount.model");
 
-class ChatRepository{
+class ChatRepository {
   constructor() {
     this.UserRepository = new UserRepository();
   }
 
   createChat = async (users, type, chatName) => {
     const sender = await this.UserRepository.findUserById(users[0]);
-    const chat =  Chat.create({
+    const chat = Chat.create({
       chatName: chatName,
       chatType: type,
       chatInitiator: sender.username,
@@ -44,7 +44,7 @@ class ChatRepository{
   addChatParticipants = async (chatId, users) => {
     return Chat.findOneAndUpdate(
       { _id: chatId },
-      { $set: { allReadersRead: false , participants:users} },
+      { $set: { allReadersRead: false, participants: users } },
       { new: true, upsert: true }
     );
   };
@@ -52,23 +52,24 @@ class ChatRepository{
   removeParticipantFromChat = async (userId, chatId) => {
     return Chat.findOneAndUpdate(
       { _id: chatId },
-      { $pull: { "participants": userId  } },
+      { $pull: { participants: userId } },
       { new: true, upsert: true }
     );
   };
 
   findPrivateChat = async (members, type) => {
     const chat = Chat.findOne({
-      userIds: {$all:members},
+      userIds: { $all: members },
       type,
-    }).populate("userIds","username email");
+    }).populate("userIds", "username email");
     return chat;
   };
 
   findUserChats = async (userId, limit, offset) => {
     const chats = Chat.find({
-      "participants": userId ,
-    }).populate("userIds","username")
+      participants: userId,
+    })
+      .populate("userIds", "username")
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(offset);
@@ -92,6 +93,36 @@ class ChatRepository{
     return savedMessage;
   };
 
+  createUnreadChat = async (chatId, userId) => {
+    return UnreadChat.create({
+      chatId: chatId,
+      receivers: userId,
+      unreadCount: 1,
+    });
+  };
+
+  updateUnreadChatCount = async (chatId, userId) => {
+    return UnreadChat.findOneAndUpdate(
+      {
+        chatId: chatId,
+        receivers: userId,
+      },
+      { $inc: { unreadCount: 1 } },
+      {
+        new: true,
+        upsert: true,
+      }
+    );
+  };
+
+  updateUnreadChatSeenMessageCount = async (chatId, userId) => {
+    return UnreadChat.findOneAndUpdate(
+      { chatId: chatId, receivers: userId },
+      { $set: { unreadCount: 0 } },
+      { new: true, upsert: true }
+    );
+  };
+
   getChatById = async (chatId) => {
     return Chat.findOne({ _id: chatId });
   };
@@ -100,7 +131,7 @@ class ChatRepository{
     return Message.find({ chatId: chatId }).sort({ createdAt: -1 }).limit(1);
   };
 
-  updateRecentMessages = async (userId, chatId, messageId) => {
+  updateRecentMessages = async (userId, chatId) => {
     const updateMessage = Message.updateMany(
       {
         chatId: chatId,
@@ -121,8 +152,8 @@ class ChatRepository{
       .skip(offset)
       .limit(limit);
   };
-  getMessageByUUID = async(messageId)=>{
-    return Message.findOne({messageId:messageId});
-  }
-};
+  getMessageByUUID = async (messageId) => {
+    return Message.findOne({ messageId: messageId });
+  };
+}
 module.exports = ChatRepository;

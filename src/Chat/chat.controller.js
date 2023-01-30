@@ -14,7 +14,6 @@ class ChatController {
         userId: req.userId,
       };
       const result = await this.chatService.getChats(payload);
-      console.log(result);
       res.status(200).send(result);
     } catch (error) {
       res.status(500).send(error);
@@ -53,12 +52,14 @@ class ChatController {
       }
       const result = await this.chatService.sentMessage(messagePayload);
       const users = result.targetUsers;
-      const io = await req.app.get("io");
-      console.log(io);
-      users.forEach((el)=>{
-        io.socket.to(el).emit("message-received",result.message);
-      });
-      res.status(201).send(result);
+      const socketPayload = {
+        targetUsers:users,
+        chatId:message.chatId,
+        message:message.message,
+        sender:message.sender
+      }
+      await this.webSockets.sendMessage(socketPayload);
+      res.status(201).send({targetUsers:users,messageData:result.message});
     } catch (error) {
       res.status(401).send(`Unauthorized access`);
     }
