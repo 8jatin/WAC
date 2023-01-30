@@ -1,8 +1,10 @@
 const ChatService = require("./chat.service");
+const Socket = require("../Socket/socket.service")
 
-const ChatController = class {
+class ChatController {
   constructor() {
     this.chatService = new ChatService();
+    this.webSockets =  Socket;
   }
   getAllChats = async (req, res) => {
     try {
@@ -12,6 +14,7 @@ const ChatController = class {
         userId: req.userId,
       };
       const result = await this.chatService.getChats(payload);
+      console.log(result);
       res.status(200).send(result);
     } catch (error) {
       res.status(500).send(error);
@@ -32,15 +35,29 @@ const ChatController = class {
       res.status(500).json(error);
     }
   };
-  sendMessage = async (req, res) => {
+  messageController = async (req, res) => {
+    if(!req.body.message){
+      res.send("Message not provided");
+    }
     try {
       const payload = {
         message: req.body.message,
         sender: req.userId,
         chatId: req.params.id,
       };
-      const result = await this.chatService.storeMessage(payload);
-      // global.io.sockets.in(chatId).emit("new message",{message:result})
+      const message = await this.chatService.storeMessage(payload);
+      const messagePayload = {
+        messageId:message.messageId,
+        sender:message.sender,
+        chatId:message.chatId
+      }
+      const result = await this.chatService.sentMessage(messagePayload);
+      const users = result.targetUsers;
+      const io = await req.app.get("io");
+      console.log(io);
+      users.forEach((el)=>{
+        io.socket.to(el).emit("message-received",result.message);
+      });
       res.status(201).send(result);
     } catch (error) {
       res.status(401).send(`Unauthorized access`);
@@ -56,6 +73,9 @@ const ChatController = class {
         offset: req.query.offset,
       };
       const result = await this.chatService.selectedChat(payload);
+      if(result===undefined){
+        res.send("No Messages to read in this chat");
+      }
       res.status(200).send(result);
     } catch (error) {
       res.status(401).send("Unauthorized access");

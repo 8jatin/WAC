@@ -3,7 +3,7 @@ const { findUserById } = require("../User/user.repository");
 const Chat = require("./models/chat.model");
 const Message = require("./models/message.model");
 
-const ChatRepository = class {
+class ChatRepository{
   constructor() {
     this.UserRepository = new UserRepository();
   }
@@ -121,5 +121,8 @@ const ChatRepository = class {
       .skip(offset)
       .limit(limit);
   };
+  getMessageByUUID = async(messageId)=>{
+    return Message.findOne({messageId:messageId});
+  }
 };
 module.exports = ChatRepository;

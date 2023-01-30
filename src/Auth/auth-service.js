@@ -53,7 +53,7 @@ const AuthService = class {
         throw new Error("INVALID PASSWORD!");
       }
 
-      var token = jwt.sign({ id: currentUser.id }, config.secret, {
+      const token = jwt.sign({ id: currentUser.id }, config.secret, {
         expiresIn: 86400, // 24 hours
       });
 

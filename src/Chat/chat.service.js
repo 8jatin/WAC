@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const ChatRepository = require("./chat.repository");
 
-const ChatService = class {
+class ChatService {
   constructor() {
     this.chatRepository = new ChatRepository();
   }
@@ -96,6 +96,9 @@ const ChatService = class {
     const lastMessage = await this.chatRepository.getLastMessageFromChat(
       chatId
     );
+    if(lastMessage.length===0){
+      return;
+    }
     //find list of users who have access to that chat
     for (let i = 0; i < chat.userIds.length; i++) {
       //check if current user is in the list of user who have access or not
@@ -141,6 +144,23 @@ const ChatService = class {
   deleteChat = async ({userId,chatId})=>{
     const removeParticipant = await this.chatRepository.removeParticipantFromChat(userId,chatId);
     return removeParticipant;
+  }
+
+  sentMessage = async({messageId,sender,chatId})=>{
+    const targetUsers = new Map();
+    const chat = await this.chatRepository.getChatById(chatId);
+    chat.userIds.forEach((userId)=>{
+      if(userId!=sender){
+        targetUsers.set(messageId,[userId]);
+      }
+    });
+    console.log(targetUsers);
+    const message = await this.chatRepository.getMessageByUUID(messageId);
+    const result = {
+      targetUsers:targetUsers,
+      message:message,
+    }
+    return result;
   }
 };
 

@@ -1,13 +1,11 @@
 const express = require("express");
-const http = require("http");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
 const dbConfig = require("./src/Config/db.config");
-const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const config = require("./src/Config/auth.config");
-// const WebSockets =require("./src/Socket/Utlis");
+const Socket =require("./src/Socket/socket.service");
 
 // const webSocket = new WebSockets();
 const app = express();
@@ -58,42 +56,28 @@ require("./src/Add-friend/request.route")(app);
 require("./src/Chat/chat.route")(app);
 
 const PORT = process.env.PORT || 8080;
-const server = http.createServer(app);
-server.listen(PORT);
 
-const socketio = new Server(server);
-global.io = socketio.listen(server);
-global.io.use(async (socket, next) => {
-  try {
-    const token = socket.handshake.headers.authorization;
-    if (!token) {
-      throw new Error("No token Provided");
-    }
-    const payload = await jwt.verify(token, config.secret);
+const socketServer = Socket.startServer(app);
+//validating socket connection using JWT
+// io.use(async (socket, next) => {
+//   try {
+//     const token = socket.handshake.headers.authorization;
+//     console.log(token);
+//     if (!token) {
+//       throw new Error("No token Provided");
+//     }
+//     const payload = await jwt.verify(token, config.secret);
+//     console.log(payload.id);
+//     socket.userId = payload.id;
 
-    socket.userId = payload.id;
+//     next();
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
+// io.on("connection",Socket.connection);
 
-    next();
-  } catch (error) {
-    console.log(error);
-  }
-});
-const sockets = [];
-const activeUsers = new Map();
-global.io.on("connection", (socket) => {
-  if (activeUsers.has(socket.userId) === false) {
-    activeUsers.set(socket.userId,sockets);
-    activeUsers.get(socket.userId).push(socket.id);
-  } else {
-    activeUsers.get(socket.userId).push(socket.id);
-  }
-  socket.on('disconnect',()=>{
-    activeUsers.get(socket.userId).pop(socket.id);
-    console.log("user disconnected",'----',socket.id);
-  })
-});
-// global.io.on("connection",webSocket.connection);
 // set port, listen for requests
-server.on("listening", () => {
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });

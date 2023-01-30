@@ -22,7 +22,7 @@ module.exports = function(app) {
   app.post("/chats/initiate-chat", [authJwt.verifyToken], controller.initiateChat);
 
   //route to send a message in particular chat (it'll take chat id as path param)
-  app.post("/chats/:id/messages/send-message", [authJwt.verifyToken], controller.sendMessage);
+  app.post("/chats/:id/messages/send-message", [authJwt.verifyToken], controller.messageController);
 
   //route to delete a chat for user (it'll take chat id as path param)
   app.put("/chats/delete-chat/:id", [authJwt.verifyToken], controller.deleteChat);
