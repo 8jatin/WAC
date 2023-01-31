@@ -57,25 +57,28 @@ class SocketService {
     console.log(activeUsers);
   }
 
-  sendMessage({ targetUsers, chatId, message, sender }, socket) {
+  sendMessage({ targetUsers, chatId, message, sender }) {
     //emit to receivers
     targetUsers.forEach((userId) => {
-      const userSockets = activeUsers.get(userId);
+      const userSockets = activeUsers.get(userId.toString());
+      console.log("---------inside sendMessage--------", userSockets);
       if (userSockets) {
         userSockets.forEach((socketId) => {
+          console.log("------inside userSockets if condition-------", socketId);
           this.io.to(socketId).emit("message-received", message);
         });
       } else {
         this.io.to(chatId).emit("message-received", message);
       }
     });
-
-    //emit to self (if using multiple socket connection)
+    //emit to self (if using multiple socket connection) (duplicate message exist here as sender is receiving twice)
     const senderSocketConnections = activeUsers.get(sender);
+    console.log(senderSocketConnections);
     senderSocketConnections.forEach((socketId) => {
-      if (socketId != socket.id) {
+      // if (socketId != socket.id) {
+        console.log("----inside sender emit condition------", socketId);
         this.io.to(socketId).emit("message-received", message);
-      }
+      // }
     });
   }
 

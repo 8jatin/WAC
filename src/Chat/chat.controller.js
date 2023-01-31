@@ -10,7 +10,7 @@ class ChatController {
     try {
       const payload = {
         limit: req.query.limit,
-        offset: req.query.limit,
+        offset: req.query.offset,
         userId: req.userId,
       };
       const result = await this.chatService.getChats(payload);

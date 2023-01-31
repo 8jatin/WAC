@@ -73,6 +73,51 @@ class ChatRepository {
       .sort({ updatedAt: -1 })
       .limit(limit)
       .skip(offset);
+    // const chats = Chat.aggregate([
+    //   { $match: { participants: mongoose.Types.ObjectId(userId) } },
+    //   { $sort: { updatedAt: -1 } },
+    //   // {$skip:offset},
+    //   // {$limit:limit},
+    //   {
+    //     $lookup: {
+    //       from: "users",
+    //       localField: "userIds",
+    //       foreignField: "_id",
+    //       as: "userInfo",
+    //     },
+    //   },
+    //   {$lookup:{
+    //     from:"unreadchats",
+    //     localField:"_id",
+    //     foreignField:"chatId",
+    //     as:"unreadChat"
+    //   }},
+    //   {$lookup:{
+    //     from:"unreadchats",
+    //     localField:"unreadChat.receivers",
+    //     foreignField:"receivers",
+    //     as:"unreadCountOfChat"
+    //   }},
+    //   {
+    //     $project: {
+    //       _id: 1,
+    //       chatName: 1,
+    //       chatType: 1,
+    //       chatInitiator: 1,
+    //       userInfo: {
+    //         _id: 1,
+    //         username: 1,
+    //         email: 1,
+    //       },
+    //       allReadersRead: 1,
+    //       participants: 1,
+    //      unreadCountOfChat:{
+    //       unreadCount:1
+    //      }
+
+    //     },
+    //   },
+    // ]);
 
     return chats;
   };
@@ -135,13 +180,14 @@ class ChatRepository {
     const updateMessage = Message.updateMany(
       {
         chatId: chatId,
+        'readers.userId': { $ne: userId },
       },
       {
         $addToSet: {
           readers: [{ userId: userId, isRead: true }],
         },
       },
-      { new: true, multi: true }
+      { multi: true }
     );
     return updateMessage;
   };

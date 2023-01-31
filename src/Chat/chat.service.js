@@ -134,12 +134,11 @@ class ChatService {
         const userRead = lastMessage[0].readers.some(
           (el) => el.userId === userId
         );
-        if (!userRead) {
+        if (userRead===false) {
           //update the recent messages of a particular chat - adding reader details
           await this.chatRepository.updateRecentMessages(
             userId,
             chat._id,
-            lastMessage[0].messageId
           );
         }
       }
@@ -149,7 +148,6 @@ class ChatService {
     for (let val of chat.userIds) {
       //check if all the readers had read the message or not in chat
       if (receivers.has(val.toString())==false) {
-        console.log(val);
         //even if a single user is left to read break out of this loop
         flag = false;
         break;
