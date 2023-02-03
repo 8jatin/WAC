@@ -58,7 +58,7 @@ class ChatController {
         message:message.message,
         sender:message.sender
       }
-      await this.webSockets.sendMessage(socketPayload);
+      await this.webSockets.sendMessage(socketPayload);     
       res.status(201).send({targetUsers:users,messageData:result.message});
     } catch (error) {
       res.status(401).send(`Unauthorized access`);

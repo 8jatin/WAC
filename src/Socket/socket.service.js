@@ -2,6 +2,8 @@ const socketIo = require("socket.io");
 const http = require("http");
 const jwt = require("jsonwebtoken");
 const config = require("../Config/auth.config");
+const fetch = require("node-fetch");
+
 
 const server = http.createServer();
 server.listen(3000);
@@ -9,11 +11,10 @@ const socketIoServer = socketIo(server);
 const activeUsers = new Map();
 class SocketService {
   constructor() {
-    this.io = null;
+    this.io = socketIoServer.listen(server);
+
   }
   startServer() {
-    this.io = socketIoServer.listen(server);
-    console.log("-----------socket server starts before app server-----------");
     this.io.on("connection", async (socket) => {
       const verifyUser = await this.authenticateConnection(socket);
       if (verifyUser === undefined) {
@@ -23,7 +24,7 @@ class SocketService {
       await this.userRegistry(socket);
       socket.on("disconnect", async () => {
         await this.removeUserFromRegistry(socket);
-        console.log(activeUsers);
+        console.log('-----USER REGISTRY AFTER DISCONNECTION-----',activeUsers);
       });
     });
   }
@@ -54,21 +55,38 @@ class SocketService {
       //create a key of userId with its respective socket id if it doesn't exist in dictionary
       activeUsers.set(socket.userId, [socket.id]);
     }
-    console.log(activeUsers);
+    console.log('-----ACTIVE USERS------',activeUsers);
   }
 
-  sendMessage({ targetUsers, chatId, message, sender }) {
+  sendMessage({ targetUsers, chatId, message, sender }){
     //emit to receivers
-    targetUsers.forEach((userId) => {
+    targetUsers.forEach(async (userId) => {
       const userSockets = activeUsers.get(userId.toString());
-      console.log("---------inside sendMessage--------", userSockets);
       if (userSockets) {
         userSockets.forEach((socketId) => {
-          console.log("------inside userSockets if condition-------", socketId);
           this.io.to(socketId).emit("message-received", message);
         });
       } else {
-        this.io.to(chatId).emit("message-received", message);
+
+        const options = {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: "Bearer pk_prod_F9VTXNY7CEMFXHMGDPSEWJPP6XEE",
+          },
+          body: JSON.stringify({
+            message: {
+              template: "J8V5PBWQ284XZFJ39R62TNRJDJ7G",
+              to:{number:"+918059021517"}
+            },
+          }),
+        };
+
+        fetch("https://api.courier.com/send", options)
+          .then((response) => response.json())
+          .then((response) => console.log(response))
+          .catch((err) => console.error(err));
       }
     });
     //emit to self (if using multiple socket connection) (duplicate message exist here as sender is receiving twice)
@@ -76,7 +94,6 @@ class SocketService {
     console.log(senderSocketConnections);
     senderSocketConnections.forEach((socketId) => {
       // if (socketId != socket.id) {
-        console.log("----inside sender emit condition------", socketId);
         this.io.to(socketId).emit("message-received", message);
       // }
     });

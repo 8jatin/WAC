@@ -3,8 +3,6 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
 const dbConfig = require("./src/Config/db.config");
-const jwt = require("jsonwebtoken");
-const config = require("./src/Config/auth.config");
 const Socket =require("./src/Socket/socket.service");
 
 // const webSocket = new WebSockets();
