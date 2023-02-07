@@ -1,1 +1,3 @@
 node_modules
+secretFirebase.json
+src/Config/firebase.config.js

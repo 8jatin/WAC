@@ -1,5 +1,5 @@
 const { verifySignUp } = require("../validators");
-const controller = require("./auth.controller");
+const AuthController = require("./auth.controller");
 const emailController = require("../Email-Verification/verifyUserEmail")
 
 module.exports = function(app) {
@@ -10,6 +10,7 @@ module.exports = function(app) {
     );
     next();
   });
+  const controller = new AuthController();
 
   app.post(
     "/api/auth/register",
@@ -27,5 +28,6 @@ module.exports = function(app) {
 
   app.post("/api/auth/logout", controller.signOut);
 
+  //change the email verification url from nodemailer once you completed the application
   app.get("/api/auth/verify-email/:confirmationCode", emailController.verifyUser)
 };

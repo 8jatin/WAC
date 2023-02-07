@@ -1,41 +1,41 @@
-const { user } = require("../Config/auth.config");
-const {
-  getAllUsers,
-  countAllUsers,
-  getUserBySearchString,
-  findByUsername,
-  findUserByEmail,
-} = require("./user.repository");
+const UserRepository = require("./user.repository");
 
-exports.findUserBySearchString = async (searchString) => {
-  const username = await findByUsername(searchString);
-  if (username) {
-    const result = {
-      _id:username._id,
-      name:username.username,
-      email:username.email,
-      status:username.status,
-      friendList: username.friendList
-    }
-    return result;
+const UserService = class {
+  constructor() {
+    this.UserRepository = new UserRepository();
   }
-  const email = await findUserByEmail(searchString);
-  if (email) {
-    const result = {
-      _id:email._id,
-      name:email.username,
-      email:email.email,
-      status:email.status,
-      friendList: email.friendList
+  findUserBySearchString = async (searchString) => {
+    const username = await this.UserRepository.findByUsername(searchString);
+    if (username) {
+      const result = {
+        _id: username._id,
+        name: username.username,
+        email: username.email,
+        status: username.status,
+        friendList: username.friendList,
+      };
+      return result;
     }
-    return result;
-  }
-  const users = await getUserBySearchString(searchString);
-  return users;
+    const email = await this.UserRepository.findUserByEmail(searchString);
+    if (email) {
+      const result = {
+        _id: email._id,
+        name: email.username,
+        email: email.email,
+        status: email.status,
+        friendList: email.friendList,
+      };
+      return result;
+    }
+    const users = await this.UserRepository.getUserBySearchString(searchString);
+    return users;
+  };
+
+  showAllUsers = async ({ limit, offset }) => {
+    const totalUser = await this.UserRepository.countAllUsers();
+    const users = await this.UserRepository.getAllUsers(limit, offset);
+    return { totalUser, users };
+  };
 };
 
-exports.showAllUsers = async ({ limit, offset }) => {
-  const totalUser = await countAllUsers();
-  const users = await getAllUsers(limit, offset);
-  return { totalUser, users };
-};
+module.exports = UserService;
