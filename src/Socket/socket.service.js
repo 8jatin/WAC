@@ -2,9 +2,6 @@ const socketIo = require("socket.io");
 const http = require("http");
 const jwt = require("jsonwebtoken");
 const config = require("../Config/auth.config");
-const fetch = require("node-fetch");
-
-
 const server = http.createServer();
 server.listen(3000);
 const socketIoServer = socketIo(server);
@@ -67,26 +64,6 @@ class SocketService {
           this.io.to(socketId).emit("message-received", message);
         });
       } else {
-
-        const options = {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: "Bearer pk_prod_F9VTXNY7CEMFXHMGDPSEWJPP6XEE",
-          },
-          body: JSON.stringify({
-            message: {
-              template: "J8V5PBWQ284XZFJ39R62TNRJDJ7G",
-              to:{number:"+918059021517"}
-            },
-          }),
-        };
-
-        fetch("https://api.courier.com/send", options)
-          .then((response) => response.json())
-          .then((response) => console.log(response))
-          .catch((err) => console.error(err));
       }
     });
     //emit to self (if using multiple socket connection) (duplicate message exist here as sender is receiving twice)

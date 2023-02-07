@@ -5,7 +5,6 @@ const cookieSession = require("cookie-session");
 const dbConfig = require("./src/Config/db.config");
 const Socket =require("./src/Socket/socket.service");
 
-// const webSocket = new WebSockets();
 const app = express();
 const db = {};
 db.mongoose = mongoose;
@@ -56,24 +55,6 @@ require("./src/Chat/chat.route")(app);
 const PORT = process.env.PORT || 8080;
 
 const socketServer = Socket.startServer(app);
-//validating socket connection using JWT
-// io.use(async (socket, next) => {
-//   try {
-//     const token = socket.handshake.headers.authorization;
-//     console.log(token);
-//     if (!token) {
-//       throw new Error("No token Provided");
-//     }
-//     const payload = await jwt.verify(token, config.secret);
-//     console.log(payload.id);
-//     socket.userId = payload.id;
-
-//     next();
-//   } catch (error) {
-//     console.log(error);
-//   }
-// });
-// io.on("connection",Socket.connection);
 
 // set port, listen for requests
 app.listen(PORT, () => {

@@ -96,7 +96,20 @@ class ChatController {
     }
   };
 
-  markAllConversationRead = async (req, res) => {};
+  markAllConversationRead = async (req, res) => {
+    try {
+      const payload = {
+        userId:req.userId,
+        chatId:req.params.id
+      }
+      console.log(payload);
+      const result = await this.chatService.markAllChatRead(payload);
+      console.log(result);
+      res.status(201).send(result);
+    } catch (error) {
+      res.send(error)
+    }
+  };
 };
 
 module.exports = ChatController;
