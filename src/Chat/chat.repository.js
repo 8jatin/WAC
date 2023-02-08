@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const UserRepository = require("../User/user.repository");
 const Chat = require("./models/chat.model");
 const Message = require("./models/message.model");
@@ -66,58 +67,66 @@ class ChatRepository {
   };
 
   findUserChats = async (userId, limit, offset) => {
-    const chats = Chat.find({
-      participants: userId,
-    })
-      .populate("userIds", "username")
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .skip(offset);
-    // const chats = Chat.aggregate([
-    //   { $match: { participants: mongoose.Types.ObjectId(userId) } },
-    //   { $sort: { updatedAt: -1 } },
-    //   // {$skip:offset},
-    //   // {$limit:limit},
-    //   {
-    //     $lookup: {
-    //       from: "users",
-    //       localField: "userIds",
-    //       foreignField: "_id",
-    //       as: "userInfo",
-    //     },
-    //   },
-    //   {$lookup:{
-    //     from:"unreadchats",
-    //     localField:"_id",
-    //     foreignField:"chatId",
-    //     as:"unreadChat"
-    //   }},
-    //   {$lookup:{
-    //     from:"unreadchats",
-    //     localField:"unreadChat.receivers",
-    //     foreignField:"receivers",
-    //     as:"unreadCountOfChat"
-    //   }},
-    //   {
-    //     $project: {
-    //       _id: 1,
-    //       chatName: 1,
-    //       chatType: 1,
-    //       chatInitiator: 1,
-    //       userInfo: {
-    //         _id: 1,
-    //         username: 1,
-    //         email: 1,
-    //       },
-    //       allReadersRead: 1,
-    //       participants: 1,
-    //      unreadCountOfChat:{
-    //       unreadCount:1
-    //      }
-
-    //     },
-    //   },
-    // ]);
+    const skip = offset?parseInt(offset):0;
+    const page = limit?parseInt(limit):10;
+    // const chats = Chat.find({
+    //   participants: userId,
+    // })
+    //   .populate("userIds", "username")
+    //   .sort({ updatedAt: -1 })
+    //   .limit(limit)
+    //   .skip(offset);
+    const chats = Chat.aggregate([
+      { $match: { participants: mongoose.Types.ObjectId(userId) } },
+      { $sort: { updatedAt: -1 } },
+      { "$skip": skip },
+      { "$limit": page},
+      {
+        $lookup: {
+          from: "users",
+          localField: "userIds",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+      {
+        $lookup: {
+          from: "unreadchats",
+          as: "unreadChat",
+          let: { chatId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$receivers", mongoose.Types.ObjectId(userId)] },
+                    { $eq: ["$chatId", "$$chatId"] },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          chatName: 1,
+          chatType: 1,
+          chatInitiator: 1,
+          userInfo: {
+            _id: 1,
+            username: 1,
+            email: 1,
+          },
+          allReadersRead: 1,
+          participants: 1,
+          unreadChat: {
+            unreadCount: 1,
+          },
+        },
+      },
+    ]);
 
     return chats;
   };
@@ -180,7 +189,7 @@ class ChatRepository {
     const updateMessage = Message.updateMany(
       {
         chatId: chatId,
-        'readers.userId': { $ne: userId },
+        "readers.userId": { $ne: userId },
       },
       {
         $addToSet: {

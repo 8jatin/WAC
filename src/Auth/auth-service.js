@@ -16,12 +16,13 @@ const AuthService = class {
   constructor() {
     this.UserRepository = new UserRepository();
   }
-  createUser = async ({ username, password, email }) => {
+  createUser = async ({ username, password, email , pic}) => {
     try {
       const user = await this.UserRepository.create({
         username,
         password,
         email,
+        pic
       });
       const verification = await sendConfirmationEmail(
         user.username,

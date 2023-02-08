@@ -6,7 +6,7 @@ var bcrypt = require("bcryptjs");
 const Token = require("./model/token.model");
 
 const UserRepository = class {
-  create = async ({ username, password, email }) => {
+  create = async ({ username, password, email , pic}) => {
     const token = jwt.sign({ email: email }, config.secret);
 
     const user = await User.create({
@@ -14,6 +14,7 @@ const UserRepository = class {
       email: email,
       password: bcrypt.hashSync(password, 8),
       confirmationCode: token,
+      profilePicture: pic
     });
     return user;
   };

@@ -10,7 +10,9 @@ const AuthController = class {
         username: req.body.username,
         password: req.body.password,
         email: req.body.email,
+        pic: req.file.filename
       };
+      console.log(payload);
       const result = await this.AuthService.createUser(payload);
       res
         .status(201)

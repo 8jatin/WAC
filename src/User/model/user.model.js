@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
     confirmationCode: {
       type: String,
     },
+    profilePicture: String,
     pendingRequest: {
       type: Number,
       default: 0,
