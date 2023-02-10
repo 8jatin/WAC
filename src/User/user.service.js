@@ -36,6 +36,12 @@ const UserService = class {
     const users = await this.UserRepository.getAllUsers(limit, offset);
     return { totalUser, users };
   };
+
+  deleteUser = async({userId})=>{
+    const user = await this.UserRepository.findUserById(userId);
+    await this.UserRepository.deleteUserFromDB(userId);
+    return user;
+  }
 };
 
 module.exports = UserService;

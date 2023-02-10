@@ -19,6 +19,10 @@ const UserRepository = class {
     return user;
   };
 
+  deleteUserFromDB = async(userId)=>{
+    return User.deleteOne({_id:userId});
+  }
+
   findByUsername = async (username) => {
     const user = User.findOne({
       username: username,

@@ -18,4 +18,6 @@ module.exports = function(app) {
 
   app.get("/api/users", [authJwt.verifyToken], controller.allUsers);
 
+  app.get("/api/delete-user",[authJwt.verifyToken],controller.deleteUser);
+
 };
