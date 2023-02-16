@@ -63,7 +63,6 @@ const AuthService = class {
         username: currentUser.username,
         email: currentUser.email,
         status: currentUser.status,
-        pic:currentUser.profilePicture,
         requestsPending: currentUser.pendingRequest,
         friends: currentUser.friendList,
         token:token

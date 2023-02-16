@@ -10,13 +10,6 @@ const chatSchema = new mongoose.Schema(
       default: "Private",
     },
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    chatDeleteTime: [
-      {
-        _id:false,
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        deletionTime: { type: Date, default: undefined },
-      },
-    ],
     allReadersRead: { type: Boolean, default: false },
     chatInitiator: String,
     unreadCount: Number,

@@ -115,26 +115,10 @@ class ChatService {
 
   selectedChat = async ({ userId, chatId, limit, offset }) => {
     const options = {
-      userId: userId,
-      chatId: chatId,
-    };
-    await this.markAllChatRead(options);
-    const chat = await this.chatRepository.getChatById(chatId);
-
-    if (chat.chatDeleteTime.length !== 0) {
-      for (let i = 0; i < chat.chatDeleteTime.length; i++) {
-        if (chat.chatDeleteTime[i].userId == userId) {
-          const messages =
-            await this.chatRepository.getMessagesAfterChatDeletion(
-              chatId,
-              chat.chatDeleteTime[i].deletionTime,
-              offset,
-              limit
-            );
-          return messages;
-        }
-      }
+      userId:userId,
+      chatId:chatId
     }
+    await this.markAllChatRead(options);
     //list all the recent messages in chat according to their timestamps
     const messages = await this.chatRepository.getMessagesByChatId(
       chatId,
@@ -145,15 +129,6 @@ class ChatService {
   };
 
   deleteChat = async ({ userId, chatId }) => {
-    const chat = await this.chatRepository.getChatById(chatId);
-    if(chat.chatDeleteTime.length!==0){
-    for(let i = 0; i<chat.chatDeleteTime.length;i++){
-      if(chat.chatDeleteTime[i].userId==userId){
-        const result = await this.chatRepository.updateDeletionTime(chatId,userId);
-        return result;
-      }
-    }
-  }
     const removeParticipant =
       await this.chatRepository.removeParticipantFromChat(userId, chatId);
     return removeParticipant;

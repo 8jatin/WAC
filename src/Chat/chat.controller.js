@@ -102,7 +102,9 @@ class ChatController {
         userId:req.userId,
         chatId:req.params.id
       }
+      console.log(payload);
       const result = await this.chatService.markAllChatRead(payload);
+      console.log(result);
       res.status(201).send(result);
     } catch (error) {
       res.send(error)

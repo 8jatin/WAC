@@ -51,27 +51,9 @@ class ChatRepository {
   };
 
   removeParticipantFromChat = async (userId, chatId) => {
-    const chat = await Chat.findOneAndUpdate(
+    return Chat.findOneAndUpdate(
       { _id: chatId },
       { $pull: { participants: userId } },
-      { new: true, upsert: true }
-    );
-    const updatedChat = Chat.findOneAndUpdate(
-      { _id: chatId },
-      {
-        $addToSet: {
-          chatDeleteTime: [{ userId: userId, deletionTime: Date.now() }],
-        },
-      },
-      { new: true, upsert: true }
-    );
-    return updatedChat;
-  };
-
-  updateDeletionTime = async (chatId, userId) => {
-    return Chat.findOneAndUpdate(
-      { _id: chatId, "chatDeleteTime.userId": userId },
-      { $set: { "chatDeleteTime.$.deletionTime": Date.now() } },
       { new: true, upsert: true }
     );
   };
@@ -85,8 +67,8 @@ class ChatRepository {
   };
 
   findUserChats = async (userId, limit, offset) => {
-    const skip = offset ? parseInt(offset) : 0;
-    const page = limit ? parseInt(limit) : 10;
+    const skip = offset?parseInt(offset):0;
+    const page = limit?parseInt(limit):10;
     // const chats = Chat.find({
     //   participants: userId,
     // })
@@ -97,8 +79,8 @@ class ChatRepository {
     const chats = Chat.aggregate([
       { $match: { participants: mongoose.Types.ObjectId(userId) } },
       { $sort: { updatedAt: -1 } },
-      { $skip: skip },
-      { $limit: page },
+      { "$skip": skip },
+      { "$limit": page},
       {
         $lookup: {
           from: "users",
@@ -221,13 +203,6 @@ class ChatRepository {
 
   getMessagesByChatId = async (chatId, offset, limit) => {
     return Message.find({ chatId: chatId })
-      .sort({ createdAt: -1 })
-      .skip(offset)
-      .limit(limit);
-  };
-
-  getMessagesAfterChatDeletion = async (chatId, time, offset, limit) => {
-    return Message.find({ chatId: chatId, createdAt: { $gte: time } })
       .sort({ createdAt: -1 })
       .skip(offset)
       .limit(limit);
