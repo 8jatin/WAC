@@ -43,7 +43,6 @@ const UserController = class{
       const payload = {
         userId: req.userId
       }
-      console.log(payload);
       const result = await this.userService.deleteUser(payload);
       fs.stat(path.join(imageLocation, `${result.profilePicture}`),(err,stats)=>{
         console.log('------STAT-----',stats);
