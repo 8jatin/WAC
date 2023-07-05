@@ -12,7 +12,7 @@ const { bcrypt_salt} = require("../Config/auth.config");
 const { generateOTP } = require("../validators/generateOTP");
 const UserRepository = require("../User/user.repository");
 
-const AuthService = class {
+class AuthService {
   constructor() {
     this.UserRepository = new UserRepository();
   }

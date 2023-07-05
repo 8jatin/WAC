@@ -51,26 +51,6 @@ class ChatService {
         limit,
         offset
       );
-      // let sum = 0;
-      // let result = [];
-      // chats.forEach(async (el) => {
-      //   const unreadMessages =
-      //     await this.chatRepository.findTotalUnreadCountForChat(el._id,userId);
-      //     for(let i = 0 ; i<unreadMessages.length;i++){
-      //       sum += unreadMessages[i].unreadCount
-      //     }
-      //     result.push({sum,el});
-      // });
-      //This code is to return the recent message from each chat, we'll use it in future
-
-      // let messages = new Set();
-      // console.log(chats.length);
-      // for (let i = 0; i < chats.length; i++) {
-      //   const message = await this.chatRepository.getLastMessageFromChat({
-      //   _id:chats[i]._id,
-      //   });
-      //   messages.add(message);
-      // }
       return chats;
     } catch (error) {
       throw new Error(error);

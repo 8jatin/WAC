@@ -74,6 +74,7 @@ class SocketService {
         this.io.to(socketId).emit("message-received", message);
       // }
     });
+    return;
   }
 
   removeUserFromRegistry(socket) {
